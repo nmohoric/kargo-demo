@@ -1,0 +1,24 @@
+apiVersion: hearstapps.com/v1beta
+kind: IgorIngress
+metadata:
+  labels:
+    app.kubernetes.io/component: webserver
+    app.kubernetes.io/managed-by: nimitz
+    app.kubernetes.io/part-of: cluster-status
+    app.kubernetes.io/version: 3.6.1
+  name: cluster-status
+  namespace: default
+spec:
+- env_overrides: null
+  ingress:
+    allowed_envs: null
+    components: null
+    extra_domains: null
+    force_ssl_redirect: true
+    private:
+      allowlist:
+      - hearst_default
+      - all_k8s_nats
+      denylist: null
+    proxy_read_timeout: null
+    public: false
