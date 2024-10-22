@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    cluster: kubefeature
+    kubernetes.io/change-cause: |-
+      deployed version 3.6.1
+      cluster-status:
+    owner: astro-kubefeature
+    slack_channel_name: cluster-status
+  labels:
+    app: cluster-status
+    app.kubernetes.io/component: webserver
+    app.kubernetes.io/managed-by: nimitz
+    app.kubernetes.io/name: cluster-status
+    app.kubernetes.io/part-of: cluster-status
+    app.kubernetes.io/version: 3.6.1
+  name: cluster-status
+  namespace: default
+spec:
+  minReadySeconds: 30
+  progressDeadlineSeconds: 300
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: cluster-status
+  template:
+    metadata:
+      labels:
+        app: cluster-status
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - cluster-status
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 100
+      containers:
+      - env:
+        - name: GUNICORN_CMD_ARGS
+          value: -w 5
+        - name: SEARCHABLE_NAMESPACES
+          value: default,rover,ml-gpu
+        - name: APP_VERSION
+          value: 3.6.1
+        - name: DD_VERSION
+          value: 3.6.1
+        image: 451479211471.dkr.ecr.us-east-1.amazonaws.com/hearst/cluster-status:3.6.1
+        imagePullPolicy: IfNotPresent
+        name: cluster-status
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        terminationMessagePolicy: FallbackToLogsOnError
+      dnsConfig:
+        options:
+        - name: ndots
+          value: '2'
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      serviceAccount: cluster-status
+      terminationGracePeriodSeconds: 30
